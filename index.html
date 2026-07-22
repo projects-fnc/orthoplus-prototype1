@@ -1,63 +1,49 @@
-<?php
-// ============================================================
-// PHP Form Handling for Appointment & Contact
-// ============================================================
-$formMessage = '';
-$formType = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['appointment_submit'])) {
-        $name = htmlspecialchars($_POST['name'] ?? '');
-        $phone = htmlspecialchars($_POST['phone'] ?? '');
-        $date = htmlspecialchars($_POST['date'] ?? '');
-        $department = htmlspecialchars($_POST['department'] ?? '');
-        
-        // Simulate successful booking
-        $formMessage = "Thank you, $name! Your request for $department on $date has been received.";
-        $formType = 'success';
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Ortho Plus - Expert orthopedic specialists helping you move better and live better.">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ortho Plus - Expert orthopedic specialists helping you move better and live better." />
+    <meta name="keywords" content="orthopedics, joint replacement, sports medicine, clinic, doctor, Ortho Plus" />
+    <meta name="author" content="Ortho Plus" />
     <title>Ortho Plus | Move Better. Live Better.</title>
 
-    <!-- Google Fonts (Poppins and Montserrat) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
+
     <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- AOS Animation Library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
 
     <style>
         :root {
-            /* Ortho Plus Brand Colors */
-            --primary: #0B4F8C; /* Deep Royal Blue */
-            --primary-light: #1668B3; 
-            --secondary: #2AA198; /* Healing Teal */
-            --accent: #7AC943; /* Vibrant Lime Green */
-            
+            --primary: #0B4F8C;
+            --primary-light: #1668B3;
+            --primary-dark: #08304F; 
+            --secondary: #2AA198;
+            --secondary-light: #3ABDB2;
+            --accent: #7AC943;
+            --accent-hover: #66B035;
             --white: #ffffff;
             --off-white: #F7F9FC;
             --light-gray: #E2E8F0;
-            
+            --mid-gray: #CBD5E1;
             --text: #1E293B;
             --text-light: #64748B;
-            
-            --spacing-sm: 16px;
-            --spacing-md: 32px;
-            --spacing-lg: 60px;
-            --spacing-xl: 100px;
-            
-            --transition: 0.3s ease;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 20px rgba(11, 79, 140, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 50px rgba(11, 79, 140, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
+            --shadow-xl: 0 30px 70px rgba(11, 79, 140, 0.15), 0 10px 30px rgba(0, 0, 0, 0.08);
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
 
         * {
@@ -66,74 +52,120 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             color: var(--text);
-            background: var(--white);
+            background: var(--off-white);
             line-height: 1.7;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        a { text-decoration: none; }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+        /* ============ PRELOADER ============ */
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: var(--off-white);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader-pulse {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--primary), var(--secondary), var(--accent), var(--primary));
+            animation: loaderSpin 1.2s linear infinite;
+            position: relative;
+        }
+        .loader-pulse::after {
+            content: '';
+            position: absolute;
+            inset: 8px;
+            background: var(--white);
+            border-radius: 50%;
+        }
+        @keyframes loaderSpin {
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-
-        /* ============ BUTTONS ============ */
-        .btn {
-            display: inline-block;
-            padding: 12px 28px;
-            background: var(--primary);
-            color: var(--white);
-            font-weight: 600;
-            border-radius: 50px;
-            transition: var(--transition);
-            border: none;
-            cursor: pointer;
+        /* ============ CUSTOM CURSOR ============ */
+        .custom-cursor {
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--secondary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.15s ease, background 0.3s ease, border-color 0.3s ease;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
         }
-        .btn:hover {
-            background: var(--secondary);
-            color: var(--white);
+        .custom-cursor.hover {
+            transform: translate(-50%, -50%) scale(1.8);
+            background: rgba(42, 161, 152, 0.2);
+            border-color: var(--accent);
+            mix-blend-mode: normal;
         }
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-        }
-        .btn-outline:hover {
-            background: var(--primary);
-            color: var(--white);
+        @media (max-width: 768px) {
+            .custom-cursor {
+                display: none;
+            }
         }
 
-        /* ============ HEADER ============ */
-        header {
+        /* ============ NAVIGATION ============ */
+        .navbar {
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 15px 0;
+            padding: 20px 0;
+            transition: var(--transition-smooth);
+            background: transparent !important;
         }
-        .header-container {
+        .navbar .container {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 40px;
         }
-        .logo-text {
+        .nav-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-decoration: none;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 8px 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+        }
+        .nav-logo .logo-text {
             font-family: 'Montserrat', sans-serif;
             font-weight: 800;
             font-size: 1.8rem;
+            letter-spacing: -0.5px;
             line-height: 1;
         }
-        .logo-subtext {
+        .nav-logo .logo-subtext {
             font-family: 'Montserrat', sans-serif;
             font-size: 0.65rem;
             font-weight: 700;
@@ -141,532 +173,1500 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: var(--primary);
             margin-top: 4px;
         }
-        nav ul {
+        .nav-links {
             display: flex;
             list-style: none;
-            gap: 20px;
+            gap: 12px;
             align-items: center;
         }
-        nav a {
-            color: var(--text);
-            font-weight: 500;
+        .nav-links a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
             font-size: 0.95rem;
-            transition: var(--transition);
-        }
-        nav a:hover, nav a.active {
-            color: var(--secondary);
-        }
-        .btn-whatsapp {
-            background: var(--accent);
-            color: white;
             padding: 10px 20px;
             border-radius: 50px;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
-        .btn-whatsapp:hover {
-            background: #66B035;
+        .nav-links a:hover {
+            color: var(--white);
+            background: var(--secondary);
+            border-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        .nav-cta {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+            color: #fff !important;
+            padding: 11px 26px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 15px rgba(122, 201, 67, 0.4) !important;
+            border: none !important;
+        }
+        .nav-cta:hover {
+            box-shadow: 0 8px 25px rgba(122, 201, 67, 0.6) !important;
+            background: var(--primary) !important;
+        }
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1001;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+        }
+        .hamburger span {
+            width: 28px;
+            height: 2.5px;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 6px);
+        }
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -6px);
         }
 
-        /* ============ HERO SECTION ============ */
-        .hero {
-            padding-top: 100px;
-            min-height: 90vh;
-            display: flex;
-            align-items: center;
-            /* Full background banner, text on left, image visible only on the right */
-            background: linear-gradient(to right, 
-                rgba(247, 249, 252, 1) 0%, 
-                rgba(247, 249, 252, 0.95) 45%, 
-                rgba(247, 249, 252, 0) 100%), 
-                url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1600&q=80') center right/cover no-repeat;
-            position: relative;
-        }
-        .hero .container {
-            width: 100%;
-        }
-        .hero-content-inner {
-            max-width: 600px;
-        }
-        .hero h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 20px;
-            line-height: 1.2;
-        }
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--text-light);
-            margin-bottom: 30px;
-        }
-        .hero-content-btns {
-            display: flex;
-            gap: 15px;
-        }
-
-        @media (max-width: 768px) {
-            .hero {
-                background: linear-gradient(to right, 
-                rgba(247, 249, 252, 0.95) 0%, 
-                rgba(247, 249, 252, 0.95) 100%), 
-                url('https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1600&q=80') center/cover no-repeat;
+        @media (max-width: 1024px) {
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 320px;
+                height: 100vh;
+                background: rgba(247, 249, 252, 0.98);
+                backdrop-filter: blur(30px);
+                flex-direction: column;
+                justify-content: center;
+                gap: 20px;
+                transition: var(--transition-smooth);
+                box-shadow: var(--shadow-xl);
+                border-radius: 30px 0 0 30px;
+            }
+            .nav-links.active {
+                right: 0;
+            }
+            .nav-links a {
+                font-size: 1.15rem;
+                padding: 12px 28px;
+                background: var(--white);
+                width: 80%;
                 text-align: center;
             }
-            .hero-content-inner { margin: 0 auto; }
-            .hero-content-btns { justify-content: center; }
-            .hero h1 { font-size: 2.5rem; }
+            .hamburger {
+                display: flex;
+            }
         }
 
-        /* ============ SECTION STYLES ============ */
-        .section {
-            padding: var(--spacing-xl) 0;
+        /* ============ HERO ============ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--off-white) 0%, #E8F0F8 100%);
+            padding: 120px 0 80px;
         }
-        .section-header {
-            margin-bottom: var(--spacing-lg);
+        .hero-bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.4;
+            pointer-events: none;
         }
-        .section-header h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 15px;
+        .hero-bg-orb.orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary), transparent);
+            top: -10%;
+            right: -5%;
+            animation: floatOrb 12s ease-in-out infinite;
         }
-
-        /* ============ ABOUT SECTION ============ */
-        .about-content {
+        .hero-bg-orb.orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--secondary), transparent);
+            bottom: -15%;
+            left: -10%;
+            animation: floatOrb 15s ease-in-out infinite reverse;
+        }
+        .hero-bg-orb.orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--accent), transparent);
+            top: 40%;
+            left: 45%;
+            animation: floatOrb 10s ease-in-out infinite;
+        }
+        @keyframes floatOrb {
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(30px, -20px) scale(1.05);
+            }
+            50% {
+                transform: translate(-15px, 25px) scale(0.95);
+            }
+            75% {
+                transform: translate(-25px, -15px) scale(1.02);
+            }
+        }
+        .hero .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 40px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 50px;
+            gap: 60px;
             align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-content {
+            position: relative;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(11, 79, 140, 0.15);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        .hero-badge .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulseDot 2s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(122, 201, 67, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(122, 201, 67, 0);
+            }
+        }
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.6rem, 5vw, 4.2rem);
+            font-weight: 700;
+            line-height: 1.15;
+            color: var(--text);
+            margin-bottom: 20px;
+            letter-spacing: -1.5px;
+            animation: fadeInUp 0.8s 0.1s ease forwards;
+            opacity: 0;
+        }
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-light);
+            margin-bottom: 36px;
+            max-width: 500px;
+            animation: fadeInUp 0.8s 0.2s ease forwards;
+            opacity: 0;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s 0.3s ease forwards;
+            opacity: 0;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition-smooth);
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(11, 79, 140, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            background: var(--primary-light);
+            box-shadow: 0 12px 30px rgba(11, 79, 140, 0.45);
+        }
+        .btn-secondary {
+            background: var(--secondary);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(42, 161, 152, 0.35);
+        }
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            background: var(--secondary-light);
+            box-shadow: 0 12px 30px rgba(42, 161, 152, 0.45);
+        }
+        .btn-outline {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid rgba(11, 79, 140, 0.2);
+        }
+        .btn-outline:hover {
+            background: rgba(11, 79, 140, 0.05);
+            border-color: var(--primary);
+        }
+        .hero-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: fadeInUp 0.8s 0.2s ease forwards;
+            opacity: 0;
+        }
+        .hero-visual img {
+            width: 100%;
+            max-width: 550px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-xl);
+            object-fit: cover;
+        }
+
+        .hero-stats-row {
+            display: flex;
+            gap: 40px;
+            margin-top: 50px;
+            animation: fadeInUp 0.8s 0.4s ease forwards;
+            opacity: 0;
+        }
+        .hero-stat .stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--secondary);
+            line-height: 1;
+        }
+        .hero-stat .stat-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+
+        @media (max-width: 1024px) {
+            .hero .container {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 30px;
+            }
+            .hero p {
+                max-width: 100%;
+            }
+            .hero-buttons,
+            .hero-stats-row {
+                justify-content: center;
+            }
+            .hero-visual img {
+                max-width: 450px;
+            }
+        }
+
+        /* ============ SECTION COMMONS ============ */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+        .section-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+        .section-badge {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--secondary);
+            margin-bottom: 12px;
+        }
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(2rem, 3.5vw, 2.6rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 18px;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+        .section-title .highlight {
+            color: var(--primary);
+        }
+        .section-title .highlight-teal {
+            color: var(--secondary);
+        }
+        .section-subtitle {
+            color: var(--text-light);
+            font-size: 1.05rem;
+            max-width: 650px;
+            margin-bottom: 50px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ============ ABOUT ============ */
+        .about-section {
+            background: var(--white);
+        }
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .about-image-wrapper {
+            position: relative;
+        }
+        .about-image {
+            width: 100%;
+            border-radius: var(--radius-lg);
+            object-fit: cover;
+            aspect-ratio: 4/5;
+            box-shadow: var(--shadow-xl);
+        }
+        .about-image-float-card {
+            position: absolute;
+            bottom: -25px;
+            right: -25px;
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .about-image-float-card .float-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.3rem;
         }
         .about-features {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 24px;
             margin-top: 30px;
         }
         .about-feature {
-            background: var(--off-white);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--light-gray);
-            transition: var(--transition);
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
         }
-        .about-feature:hover {
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-color: var(--secondary);
+        .about-feature .feature-icon {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--secondary);
         }
         .about-feature h4 {
-            color: var(--primary);
-            font-weight: 600;
-            margin-bottom: 8px;
+            font-weight: 700;
             font-size: 1rem;
+            margin-bottom: 4px;
         }
         .about-feature p {
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             color: var(--text-light);
-            margin: 0;
-        }
-        .about-image img {
-            width: 100%;
-            border-radius: 16px;
-            object-fit: cover;
-        }
-        @media (max-width: 768px) {
-            .about-content { grid-template-columns: 1fr; }
         }
 
-        /* ============ GRID LAYOUTS (SERVICES & DOCTORS) ============ */
+        @media (max-width: 1024px) {
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .about-image-wrapper {
+                max-width: 450px;
+                margin: 0 auto;
+            }
+        }
+
+        /* ============ SERVICES ============ */
+        .services-section {
+            background: var(--off-white);
+        }
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px;
         }
         .service-card {
-            background: var(--white);
-            border-radius: 12px;
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 40px 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition-smooth);
+            position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border: 1px solid var(--light-gray);
-            transition: var(--transition);
+            /* Added vibrant lime green border */
+            border: 2px solid var(--accent);
+            cursor: pointer;
         }
         .service-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(11, 79, 140, 0.1);
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--secondary);
         }
-        .service-img img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-        }
-        .service-content {
-            padding: 25px;
-            text-align: center;
-        }
-        .service-content h3 {
+        .service-card .service-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 24px;
+            background: var(--off-white);
             color: var(--primary);
-            font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 1.2rem;
+            transition: var(--transition);
         }
-        .service-content p {
+        .service-card:hover .service-icon {
+            background: var(--secondary);
+            color: #fff;
+            transform: scale(1.1) rotate(5deg);
+        }
+        .service-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .service-card p {
             color: var(--text-light);
             font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+        .service-card .service-link {
+            color: var(--secondary);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+        .service-card .service-link:hover {
+            gap: 10px;
+            color: var(--primary);
         }
 
-        /* ============ BOOKING SECTION ============ */
-        .contact-container {
+        /* ============ DOCTORS ============ */
+        .doctors-section {
+            background: var(--white);
+        }
+        .doctors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .doctor-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition-smooth);
+            text-align: center;
+            border: 1px solid var(--off-white);
+        }
+        .doctor-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-xl);
+        }
+        .doctor-card img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            object-position: top;
+        }
+        .doctor-card .doctor-info {
+            padding: 25px 20px;
+        }
+        .doctor-card h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .doctor-card .specialty {
+            color: var(--secondary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+        .doctor-card p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .doctor-socials {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .doctor-socials a {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--off-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            transition: var(--transition);
+            text-decoration: none;
+        }
+        .doctor-socials a:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* ============ TESTIMONIALS ============ */
+        .testimonials-section {
+            background: var(--off-white);
+        }
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 28px;
+        }
+        .testimonial-card {
+            background: #fff;
+            border-radius: var(--radius-lg);
+            padding: 28px 26px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--accent);
+            transition: var(--transition-smooth);
+        }
+        .testimonial-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-4px);
+        }
+        .testimonial-card .quote-icon {
+            font-size: 2.2rem;
+            color: var(--secondary);
+            opacity: 0.25;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .testimonial-card .stars {
+            color: #F59E0B;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .testimonial-card p {
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .testimonial-author img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .testimonial-author .author-name {
+            font-weight: 600;
+            font-size: 0.92rem;
+        }
+        .testimonial-author .author-role {
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        /* ============ APPOINTMENT ============ */
+        .appointment-section {
+            background: var(--white);
+        }
+        .appointment-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 50px;
-            background: var(--off-white);
+            align-items: start;
+        }
+        .appointment-form-wrap {
+            background: #fff;
+            border-radius: var(--radius-xl);
             padding: 40px;
-            border-radius: 16px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        .appointment-form-wrap h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 24px;
         }
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
-        .form-control {
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid var(--light-gray);
-            border-radius: 8px;
-            font-family: inherit;
+            padding: 12px 16px;
+            border: 2px solid var(--mid-gray);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            background: var(--off-white);
+            color: var(--text);
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(13, 75, 122, 0.08);
+            background: #fff;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
         }
         .form-message {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background: #E7F6DF;
-            color: #3A731F;
-            border: 1px solid var(--accent);
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            font-weight: 500;
+            display: none;
+        }
+        .form-message.success {
+            display: block;
+            background: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        .appointment-info {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .info-card {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            background: var(--off-white);
+            padding: 22px 24px;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+        .info-card:hover {
+            background: #fff;
+            box-shadow: var(--shadow);
+        }
+        .info-card .info-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .info-card h4 {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .info-card p {
+            color: var(--text-light);
+            font-size: 0.88rem;
+        }
+        @media (max-width: 1024px) {
+            .appointment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .appointment-form-wrap {
+                padding: 24px 16px;
+            }
+        }
+
+        /* ============ CONTACT ============ */
+        .contact-section {
+            background: var(--off-white);
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+        .contact-map {
+            width: 100%;
+            height: 400px;
+            border-radius: var(--radius-lg);
+            object-fit: cover;
+            box-shadow: var(--shadow-lg);
+        }
+        .contact-details-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 24px;
+            background: #fff;
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            height: 100%;
+        }
+        .contact-item {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .contact-item .contact-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .contact-item strong {
+            font-size: 1.15rem;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .contact-item span {
+            color: var(--text-light);
+            font-size: 1rem;
         }
         @media (max-width: 768px) {
-            .contact-container { grid-template-columns: 1fr; }
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            .contact-map {
+                height: 300px;
+            }
         }
 
         /* ============ FOOTER ============ */
         footer {
-            background: var(--primary);
-            color: var(--white);
-            padding: 60px 0 20px;
+            background: var(--primary-dark);
+            color: #cbd5e1;
+            padding: 80px 0 30px;
         }
-        .footer-container {
+        .footer-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
             gap: 40px;
-            margin-bottom: 40px;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 40px;
         }
-        .footer-about .logo-text {
-            color: var(--white);
+        .footer-logo {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: #fff;
             margin-bottom: 15px;
         }
-        .footer-about p {
-            color: #cbd5e1;
-            font-size: 0.9rem;
+        .footer-logo span:nth-child(1) {
+            color: #fff;
         }
-        .footer-links h3 {
-            margin-bottom: 20px;
-            font-size: 1.2rem;
+        .footer-logo span:nth-child(2) {
+            color: var(--secondary);
         }
-        .footer-links ul {
-            list-style: none;
-        }
-        .footer-links ul li {
-            margin-bottom: 10px;
-        }
-        .footer-links ul li a, .footer-links ul li {
-            color: #cbd5e1;
-            transition: var(--transition);
-        }
-        .footer-links ul li a:hover {
+        .footer-logo span:nth-child(3) {
             color: var(--accent);
         }
-        .copyright {
+        .footer-col h4 {
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        .footer-col ul {
+            list-style: none;
+        }
+        .footer-col ul li {
+            margin-bottom: 12px;
+        }
+        .footer-col ul li a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+        .footer-col ul li a:hover {
+            color: var(--secondary);
+            padding-left: 5px;
+        }
+        .footer-bottom {
+            max-width: 1300px;
+            margin: 60px auto 0;
+            padding: 24px 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: #cbd5e1;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* ============ BACK TO TOP ============ */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            z-index: 999;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-smooth);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .back-to-top:hover {
+            background: var(--secondary);
+            transform: translateY(-5px);
         }
     </style>
 </head>
 <body>
-    
-    <!-- Preloader -->
-    <div id="preloader" style="position: fixed; inset: 0; background: #F7F9FC; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s;">
-        <div style="width: 50px; height: 50px; border: 4px solid var(--secondary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-    </div>
-    <script>
-        window.addEventListener('load', () => {
-            document.getElementById('preloader').style.opacity = '0';
-            setTimeout(() => document.getElementById('preloader').style.display = 'none', 500);
-        });
-    </script>
-    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
 
-    <!-- Header & Navigation -->
-    <header id="header">
-        <div class="container header-container">
-            <a href="#" class="logo">
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="loader-pulse"></div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="custom-cursor" id="customCursor"></div>
+
+    <!-- ============ NAVIGATION ============ -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="#" class="nav-logo">
                 <div class="logo-text">
-                    <span style="color: var(--primary);">ORTHO</span><span style="color: var(--secondary);">PLUS</span><span style="color: var(--accent);">+</span>
+                    <span style="color: var(--primary);">ORTHO</span><span style="color: var(--secondary); margin-left: 4px;">PLUS</span><span style="color: var(--accent);">+</span>
                 </div>
                 <div class="logo-subtext">MOVE BETTER. LIVE BETTER.</div>
             </a>
-            
-            <nav id="main-nav">
-                <ul>
-                    <li><a href="#home" class="active">Home</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#services">Treatments</a></li>
-                    <li><a href="#doctors">Specialists</a></li>
-                    <li><a href="#booking" class="btn btn-whatsapp"><i class="bi bi-calendar-check"></i> Book Now</a></li>
-                </ul>
-            </nav>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#home" onclick="closeMenu()">Home</a></li>
+                <li><a href="#about" onclick="closeMenu()">About</a></li>
+                <li><a href="#services" onclick="closeMenu()">Treatments</a></li>
+                <li><a href="#doctors" onclick="closeMenu()">Specialists</a></li>
+                <li><a href="#appointment" class="nav-cta" onclick="closeMenu()">Book Now</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="home">
+        <div class="hero-bg-orb orb-1"></div>
+        <div class="hero-bg-orb orb-2"></div>
+        <div class="hero-bg-orb orb-3"></div>
         <div class="container">
-            <div class="hero-content-inner">
-                <h1>Restoring Mobility & Improving Lives</h1>
-                <p>Expert care in orthopedics, joint replacement, and sports medicine. Trust our specialists to help you move better and live a pain-free life.</p>
-                <div class="hero-content-btns">
-                    <a href="#booking" class="btn">Book Consultation</a>
-                    <a href="#services" class="btn btn-outline">Our Treatments</a>
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-dot"></span> Premier Orthopedic Center
                 </div>
+                <h1>Restoring <span>Mobility</span> &amp; Improving Lives</h1>
+                <p>Expert care in orthopedics, joint replacement, and sports medicine. Trust our specialists to help you move better and live a pain-free life.</p>
+                <div class="hero-buttons">
+                    <a href="#appointment" class="btn btn-primary"><i class="fa-solid fa-calendar-check"></i> Book Consultation</a>
+                    <a href="#services" class="btn btn-outline"><i class="fa-solid fa-bone"></i> View Treatments</a>
+                </div>
+                <div class="hero-stats-row">
+                    <div class="hero-stat">
+                        <div class="stat-number">20+</div>
+                        <div class="stat-label">Years of Expertise</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">Successful Surgeries</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="stat-number">15+</div>
+                        <div class="stat-label">Orthopedic Experts</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <!-- Swapped 3D canvas for an orthopedic-related web image -->
+                <img src="https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=800&h=800&fit=crop" alt="Orthopedic Care and Rehabilitation" loading="lazy" />
             </div>
         </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="section about">
-        <div class="container">
-            <div class="section-header text-center">
-                <h2>About Ortho Plus</h2>
-                <p>A Foundation Built on Trust & Expertise</p>
-            </div>
-            
-            <div class="about-content">
-                <div>
-                    <p>At Ortho Plus, we specialize exclusively in the diagnosis, treatment, and rehabilitation of bone, joint, and muscle conditions. Our mission is to restore your movement and eliminate pain using advanced medical techniques.</p>
-                    
+    <!-- ============ ABOUT ============ -->
+    <section class="about-section" id="about">
+        <div class="section-container">
+            <div class="about-grid">
+                <div class="about-image-wrapper" data-aos="fade-right" data-aos-duration="800">
+                    <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&h=750&fit=crop" alt="Orthopedic Specialists" class="about-image" loading="lazy" />
+                    <div class="about-image-float-card">
+                        <div class="float-icon"><i class="fa-solid fa-medal"></i></div>
+                        <div>
+                            <strong style="display:block;font-size:1rem;color:var(--primary);">Board Certified</strong>
+                            <span style="font-size:0.85rem;color:var(--text-light);">Orthopedic Surgeons</span>
+                        </div>
+                    </div>
+                </div>
+                <div data-aos="fade-left" data-aos-duration="800">
+                    <span class="section-badge">About Ortho Plus</span>
+                    <h2 class="section-title">A Foundation Built on Trust &amp; Expertise</h2>
+                    <p class="section-subtitle">At Ortho Plus, we specialize exclusively in the diagnosis, treatment, and rehabilitation of bone, joint, and muscle conditions. Our mission is to restore your movement and eliminate pain using advanced medical techniques.</p>
                     <div class="about-features">
                         <div class="about-feature">
-                            <h4>Advanced Imaging</h4>
-                            <p>On-site digital X-rays and MRI for accurate, fast diagnosis.</p>
+                            <div class="feature-icon"><i class="fa-solid fa-x-ray"></i></div>
+                            <div><h4>Advanced Imaging</h4><p>On-site digital X-rays and MRI for accurate, fast diagnosis.</p></div>
                         </div>
                         <div class="about-feature">
-                            <h4>Specialized Care</h4>
-                            <p>Focused exclusively on musculoskeletal health and recovery.</p>
+                            <div class="feature-icon"><i class="fa-solid fa-user-nurse"></i></div>
+                            <div><h4>Specialized Care</h4><p>Focused exclusively on musculoskeletal health and recovery.</p></div>
                         </div>
                         <div class="about-feature">
-                            <h4>Rehabilitation</h4>
-                            <p>Comprehensive physical therapy programs for post-op recovery.</p>
+                            <div class="feature-icon"><i class="fa-solid fa-person-walking"></i></div>
+                            <div><h4>Rehabilitation</h4><p>Comprehensive physical therapy programs for post-op recovery.</p></div>
                         </div>
                         <div class="about-feature">
-                            <h4>Minimally Invasive</h4>
-                            <p>Modern surgical techniques for faster healing times.</p>
+                            <div class="feature-icon"><i class="fa-solid fa-scalpel-line-dashed"></i></div>
+                            <div><h4>Minimally Invasive</h4><p>Modern surgical techniques for faster healing times.</p></div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="about-image">
-                    <!-- Removed Board Certified overlay per instructions -->
-                    <img src="https://images.unsplash.com/photo-1581056771107-24ca5f033842?w=800&q=80" alt="Orthopedic Clinic Facility">
+                    <a href="#doctors" class="btn btn-primary" style="margin-top:35px;"><i class="fa-solid fa-arrow-right"></i> Meet Our Surgeons</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Our Treatments Section -->
-    <section id="services" class="section services">
-        <div class="container">
-            <div class="section-header text-center">
-                <h2>Our Treatments</h2>
-                <p>Comprehensive care to keep you moving.</p>
+    <!-- ============ SERVICES ============ -->
+    <section class="services-section" id="services">
+        <div class="section-container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="section-badge">Our Treatments</span>
+                <h2 class="section-title">Comprehensive Orthopedic Care</h2>
+                <p class="section-subtitle mx-auto">From conservative management to complex surgical interventions, we offer specialized treatments to keep you moving.</p>
             </div>
-            
             <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-img">
-                        <img src="https://images.unsplash.com/photo-1579684453377-48ec05c6b30a?w=600&q=80" alt="Joint Replacement">
-                    </div>
-                    <div class="service-content">
-                        <h3>Joint Replacement</h3>
-                        <p>Advanced hip, knee, and shoulder replacement surgeries.</p>
-                    </div>
+                <div class="service-card" data-aos="zoom-in" data-aos-delay="100">
+                    <div class="service-icon"><i class="fa-solid fa-bone"></i></div>
+                    <h3>Joint Replacement</h3>
+                    <p>Advanced hip, knee, and shoulder replacement surgeries utilizing minimally invasive techniques.</p>
+                    <a href="#" class="service-link">Learn More <i class="fa-solid fa-arrow-right-long"></i></a>
                 </div>
-                
-                <div class="service-card">
-                    <div class="service-img">
-                        <img src="https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&q=80" alt="Sports Medicine">
-                    </div>
-                    <div class="service-content">
-                        <h3>Sports Medicine</h3>
-                        <p>Treatment of athletic injuries including ACL and meniscus repairs.</p>
-                    </div>
+                <div class="service-card" data-aos="zoom-in" data-aos-delay="200">
+                    <div class="service-icon"><i class="fa-solid fa-person-running"></i></div>
+                    <h3>Sports Medicine</h3>
+                    <p>Treatment of athletic injuries including ACL tears, meniscus injuries, and shoulder dislocations.</p>
+                    <a href="#" class="service-link">Learn More <i class="fa-solid fa-arrow-right-long"></i></a>
                 </div>
-                
-                <div class="service-card">
-                    <div class="service-img">
-                        <img src="https://images.unsplash.com/photo-1584515933487-779824d29309?w=600&q=80" alt="Spine Care">
-                    </div>
-                    <div class="service-content">
-                        <h3>Spine Care</h3>
-                        <p>Comprehensive care for back and neck pain and herniated discs.</p>
-                    </div>
+                <div class="service-card" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="service-icon"><i class="fa-solid fa-person-rays"></i></div>
+                    <h3>Spine Care</h3>
+                    <p>Comprehensive care for back and neck pain, herniated discs, and spinal deformities.</p>
+                    <a href="#" class="service-link">Learn More <i class="fa-solid fa-arrow-right-long"></i></a>
                 </div>
-            </div>
-            
-            <div class="text-center" style="margin-top: 40px;">
-                <a href="treatments.html" class="btn btn-outline">View All Treatments</a>
+                <div class="service-card" data-aos="zoom-in" data-aos-delay="400">
+                    <div class="service-icon"><i class="fa-solid fa-hand-dots"></i></div>
+                    <h3>Hand &amp; Upper Extremity</h3>
+                    <p>Specialized treatment for carpal tunnel, trigger finger, and complex fractures of the arm and hand.</p>
+                    <a href="#" class="service-link">Learn More <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+                <div class="service-card" data-aos="zoom-in" data-aos-delay="500">
+                    <div class="service-icon"><i class="fa-solid fa-shoe-prints"></i></div>
+                    <h3>Foot &amp; Ankle Care</h3>
+                    <p>Expert care for bunions, Achilles tendon injuries, plantar fasciitis, and ankle arthritis.</p>
+                    <a href="#" class="service-link">Learn More <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+                <div class="service-card" data-aos="zoom-in" data-aos-delay="600">
+                    <div class="service-icon"><i class="fa-solid fa-truck-medical"></i></div>
+                    <h3>Orthopedic Trauma</h3>
+                    <p>Urgent care for fractures, dislocations, and severe musculoskeletal injuries.</p>
+                    <a href="#" class="service-link">Learn More <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Meet Our Specialists Section -->
-    <section id="doctors" class="section services">
-        <div class="container">
-            <div class="section-header text-center">
-                <h2>Meet Our Specialists</h2>
-                <p>Our experts are recognized leaders in orthopedics.</p>
+    <!-- ============ DOCTORS ============ -->
+    <section class="doctors-section" id="doctors">
+        <div class="section-container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="section-badge">Our Specialists</span>
+                <h2 class="section-title">Meet Your Orthopedic Team</h2>
+                <p class="section-subtitle mx-auto">Our highly trained surgeons and physicians are recognized leaders in the field of orthopedics and sports medicine.</p>
             </div>
-
-            <div class="services-grid">
-                <!-- Doctor 1 -->
-                <div class="service-card">
-                    <div class="service-img">
-                        <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=500&fit=crop" alt="Dr. Robert Hayes">
-                    </div>
-                    <div class="service-content">
+            <div class="doctors-grid">
+                <div class="doctor-card" data-aos="fade-up" data-aos-delay="100">
+                    <img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=500&fit=crop" alt="Dr. Robert Hayes" loading="lazy" />
+                    <div class="doctor-info">
                         <h3>Dr. Robert Hayes</h3>
-                        <p style="color: var(--secondary); font-weight: 600; margin-bottom: 5px;">Joint Replacement</p>
-                        <p>Board-certified orthopedic surgeon specializing in arthroplasty.</p>
+                        <p class="specialty">Joint Replacement Surgeon</p>
+                        <p>Over 18 years of experience specializing in robotic-assisted hip and knee arthroplasty.</p>
+                        <div class="doctor-socials">
+                            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Doctor 2 -->
-                <div class="service-card">
-                    <div class="service-img">
-                        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=500&fit=crop" alt="Dr. Elena Rostova">
-                    </div>
-                    <div class="service-content">
+                <div class="doctor-card" data-aos="fade-up" data-aos-delay="200">
+                    <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=500&fit=crop" alt="Dr. Sarah Mitchell" loading="lazy" />
+                    <div class="doctor-info">
                         <h3>Dr. Elena Rostova</h3>
-                        <p style="color: var(--secondary); font-weight: 600; margin-bottom: 5px;">Sports Medicine</p>
-                        <p>Expert in arthroscopic knee and shoulder repair.</p>
+                        <p class="specialty">Sports Medicine Specialist</p>
+                        <p>Former team physician for professional athletes. Expert in arthroscopic knee and shoulder repair.</p>
+                        <div class="doctor-socials">
+                            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Doctor 3 -->
-                <div class="service-card">
-                    <div class="service-img">
-                        <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=500&fit=crop" alt="Dr. David Lin">
-                    </div>
-                    <div class="service-content">
+                <div class="doctor-card" data-aos="fade-up" data-aos-delay="300">
+                    <img src="https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=400&h=500&fit=crop" alt="Dr. Michael Chen" loading="lazy" />
+                    <div class="doctor-info">
                         <h3>Dr. David Lin</h3>
-                        <p style="color: var(--secondary); font-weight: 600; margin-bottom: 5px;">Spine Surgeon</p>
-                        <p>Specializes in minimally invasive spinal surgery.</p>
+                        <p class="specialty">Spine Surgeon</p>
+                        <p>Specializes in minimally invasive spinal surgery and non-operative management of back pain.</p>
+                        <div class="doctor-socials">
+                            <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                            <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="text-center" style="margin-top: 40px;">
-                <a href="specialists.html" class="btn btn-outline">See All Specialists</a>
             </div>
         </div>
     </section>
 
-    <!-- Booking Page -->
-    <section id="booking" class="section">
-        <div class="container">
-            <div class="section-header text-center">
-                <h2>Book Now</h2>
-                <p>Take the first step toward living pain-free.</p>
+    <!-- ============ TESTIMONIALS ============ -->
+    <section class="testimonials-section" id="testimonials">
+        <div class="section-container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="section-badge">Patient Stories</span>
+                <h2 class="section-title">Real Stories, <span class="highlight-teal">Real Recovery</span></h2>
+                <p class="section-subtitle mx-auto">
+                    Hear from patients who have regained their mobility and quality of life
+                    with ORTHO PLUS.
+                </p>
             </div>
-            
-            <div class="contact-container">
-                <div class="contact-info">
-                    <h3>Fast & Easy Scheduling</h3>
-                    <p style="margin-bottom: 20px; color: var(--text-light);">Send us your details and our team will contact you to confirm a time that works best for you.</p>
-                    
-                    <ul style="list-style: none;">
-                        <li style="margin-bottom: 15px;"><i class="bi bi-geo-alt" style="color: var(--secondary); margin-right: 10px;"></i> 100 Ortho Way, Medical District, NY</li>
-                        <li style="margin-bottom: 15px;"><i class="bi bi-telephone" style="color: var(--secondary); margin-right: 10px;"></i> +1 (555) 222-1000</li>
-                        <li style="margin-bottom: 15px;"><i class="bi bi-envelope" style="color: var(--secondary); margin-right: 10px;"></i> appointments@orthoplus.com</li>
-                    </ul>
+            <div class="testimonials-grid">
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-right"></i></div>
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p>"After my knee replacement, I was walking without pain within six weeks. Dr. Carter and his team gave me my active life back."</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="Patient" loading="lazy">
+                        <div><span class="author-name">Robert Thompson</span><br><span class="author-role">Knee Replacement Patient</span></div>
+                    </div>
                 </div>
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-right"></i></div>
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p>"I suffered from chronic back pain for years. Dr. Mitchell's spinal surgery changed my life — I'm finally pain-free and active again."</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" alt="Patient" loading="lazy">
+                        <div><span class="author-name">Maria Gonzalez</span><br><span class="author-role">Spine Surgery Patient</span></div>
+                    </div>
+                </div>
+                <div class="testimonial-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="quote-icon"><i class="fa-solid fa-quote-right"></i></div>
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p>"As a competitive runner, I thought my career was over after my ACL injury. Dr. Chen got me back on track — I'm faster than ever!"</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop&crop=face" alt="Patient" loading="lazy">
+                        <div><span class="author-name">Jennifer Williams</span><br><span class="author-role">Sports Medicine Patient</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ APPOINTMENT ============ -->
+    <section class="appointment-section" id="appointment">
+        <div class="section-container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="section-badge">Book Now</span>
+                <h2 class="section-title">Schedule Your <span class="highlight">Orthopedic</span> Consultation</h2>
+                <p class="section-subtitle mx-auto">
+                    Take the first step toward better movement. Book an appointment with our
+                    expert team today.
+                </p>
+            </div>
+            <div class="appointment-grid">
+                <div class="appointment-form-wrap" data-aos="fade-right" data-aos-duration="800">
+                    <h3><i class="fa-solid fa-calendar-plus" style="color:var(--primary);margin-right:8px;"></i> Request an Appointment</h3>
                     
-                <div class="contact-form">
-                    <?php if ($formMessage && isset($_POST['appointment_submit'])): ?>
-                        <div class="form-message"><?php echo $formMessage; ?></div>
-                    <?php endif; ?>
-                    <form method="POST" action="#booking">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
+                    <div id="formMessage" class="form-message success" style="display:none;"></div>
+                    
+                    <form id="appointmentForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" placeholder="John Doe" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" placeholder="john@example.com" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="date">Preferred Date *</label>
+                                <input type="date" id="date" name="date" required>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="department">Specialty / Concern</label>
-                            <select id="department" name="department" class="form-control" required>
-                                <option value="">Select Concern</option>
+                            <label for="department">Orthopedic Specialty *</label>
+                            <select id="department" name="department" required>
+                                <option value="">Select Specialty</option>
                                 <option value="Joint Replacement">Joint Replacement</option>
-                                <option value="Sports Injury">Sports Injury</option>
-                                <option value="Spine Care">Spine Care</option>
-                                <option value="General">General Orthopedics</option>
+                                <option value="Sports Medicine">Sports Medicine</option>
+                                <option value="Spine & Back">Spine &amp; Back</option>
+                                <option value="Hand & Wrist">Hand &amp; Wrist</option>
+                                <option value="Foot & Ankle">Foot &amp; Ankle</option>
+                                <option value="Physical Therapy">Physical Therapy</option>
+                                <option value="General Orthopedics">General Orthopedics</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="date">Preferred Date</label>
-                            <input type="date" id="date" name="date" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
+                            <label for="message">Brief Description of Condition</label>
+                            <textarea id="message" name="message" rows="3" placeholder="Describe your symptoms or concerns..."></textarea>
                         </div>
-                        <button type="submit" name="appointment_submit" class="btn" style="width: 100%;">Confirm Request</button>
+                        <button type="submit" name="appt_submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Request
+                        </button>
                     </form>
+                </div>
+                <div class="appointment-info" data-aos="fade-left" data-aos-duration="800">
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fa-solid fa-clock"></i></div>
+                        <div>
+                            <h4>Clinic Hours</h4>
+                            <p>Mon–Fri: 8:00 AM – 7:00 PM<br>Sat: 9:00 AM – 3:00 PM<br>Sun: Closed</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fa-solid fa-phone-volume"></i></div>
+                        <div>
+                            <h4>Emergency Ortho Line</h4>
+                            <p>+1 (555) 911-0000<br>Available 24/7 for urgent orthopedic needs</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fa-solid fa-credit-card"></i></div>
+                        <div>
+                            <h4>Insurance &amp; Billing</h4>
+                            <p>We accept most major insurance plans. Contact our billing team for details.</p>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <h4>Our Location</h4>
+                            <p>742 Evergreen Terrace,<br>Medical District, NY 10001</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- ============ CONTACT ============ -->
+    <section class="contact-section" id="contact">
+        <div class="section-container">
+            <div class="text-center" data-aos="fade-up">
+                <span class="section-badge">Get In Touch</span>
+                <h2 class="section-title">We're Here to <span class="highlight">Help</span></h2>
+                <p class="section-subtitle mx-auto">
+                    Have questions about your condition or treatment options? Reach out to our
+                    friendly team.
+                </p>
+            </div>
+            <div class="contact-grid">
+                <div data-aos="fade-right" data-aos-duration="800">
+                    <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&h=500&fit=crop" alt="ORTHO PLUS Clinic" class="contact-map" loading="lazy">
+                </div>
+                <div data-aos="fade-left" data-aos-duration="800">
+                    <div class="contact-details-wrap">
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <strong>Phone</strong>
+                                <span>+1 (555) 123-4567</span>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+                            <div>
+                                <strong>Email</strong>
+                                <span>info@orthoplus.com</span>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+                            <div>
+                                <strong>Address</strong>
+                                <span>742 Evergreen Terrace,<br>Medical District, NY 10001</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
     <footer>
-        <div class="container">
-            <div class="footer-container">
-                <div class="footer-about">
-                    <div class="logo-text">ORTHO<span style="color:var(--secondary);">PLUS</span><span style="color:var(--accent);">+</span></div>
-                    <p>Trust. Expertise. Confidence. We are dedicated to providing the highest quality orthopedic care to restore your mobility.</p>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-logo">
+                    <span>ORTHO</span><span>PLUS</span><span>+</span>
                 </div>
-                
-                <div class="footer-links">
-                    <h3>Quick Links</h3>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#services">Treatments</a></li>
-                        <li><a href="#doctors">Specialists</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-links">
-                    <h3>Treatments</h3>
-                    <ul>
-                        <li><a href="#">Joint Replacement</a></li>
-                        <li><a href="#">Sports Medicine</a></li>
-                        <li><a href="#">Spine Care</a></li>
-                        <li><a href="#">Physical Therapy</a></li>
-                    </ul>
-                </div>
+                <p style="line-height:1.7;font-size:0.95rem;">Trust. Expertise. Confidence. We are dedicated to providing the highest quality orthopedic care to restore your mobility and get you back to the life you love.</p>
             </div>
-            
-            <div class="copyright">
-                <p>&copy; <?php echo date('Y'); ?> Ortho Plus Orthopedic Center. All rights reserved.</p>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About Our Clinic</a></li>
+                    <li><a href="#services">Treatments</a></li>
+                    <li><a href="#doctors">Our Surgeons</a></li>
+                    <li><a href="#appointment">Book Consultation</a></li>
+                </ul>
             </div>
+            <div class="footer-col">
+                <h4>Specialties</h4>
+                <ul>
+                    <li><a href="#">Joint Replacement</a></li>
+                    <li><a href="#">Sports Medicine</a></li>
+                    <li><a href="#">Spine Care</a></li>
+                    <li><a href="#">Hand &amp; Wrist</a></li>
+                    <li><a href="#">Foot &amp; Ankle</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <ul style="color: #94a3b8; font-size: 0.95rem;">
+                    <li style="display:flex;gap:10px;"><i class="fa-solid fa-location-dot" style="margin-top:4px;color:var(--secondary);"></i> 100 Ortho Way, Medical District, NY 10001</li>
+                    <li style="display:flex;gap:10px;"><i class="fa-solid fa-phone" style="margin-top:4px;color:var(--secondary);"></i> +1 (555) 222-1000</li>
+                    <li style="display:flex;gap:10px;"><i class="fa-solid fa-envelope" style="margin-top:4px;color:var(--secondary);"></i> care@orthoplus.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Ortho Plus Orthopedic Center. All rights reserved.</p>
         </div>
     </footer>
 
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+    <!-- ============ SCRIPTS ============ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+    <script>
+        // ============ AOS INIT ============
+        AOS.init({ once: true, offset: 80, duration: 700, easing: 'ease-out-cubic' });
+
+        // ============ SET MIN DATE FOR APPOINTMENT ============
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateInput = document.getElementById('date');
+            if (dateInput) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.setAttribute('min', today);
+            }
+        });
+
+        // ============ PRELOADER ============
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('preloader').classList.add('hidden');
+            }, 600);
+        });
+
+        // ============ CUSTOM CURSOR ============
+        const cursor = document.getElementById('customCursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+        document.querySelectorAll('a, button, .btn, .service-card, .doctor-card, input, select, textarea').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // ============ NAVBAR SCROLL ============
+        const navbar = document.getElementById('navbar');
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 60) {
+                navbar.classList.add('scrolled');
+                backToTop.classList.add('visible');
+            } else {
+                navbar.classList.remove('scrolled');
+                backToTop.classList.remove('visible');
+            }
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ============ MOBILE MENU ============
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        }
+
+        function closeMenu() {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('active');
+        }
+
+        // ============ FORM HANDLING (JavaScript simulation) ============
+        const form = document.getElementById('appointmentForm');
+        const msgDiv = document.getElementById('formMessage');
+
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Gather values
+                const name = document.getElementById('name').value.trim();
+                const department = document.getElementById('department').value;
+                const date = document.getElementById('date').value;
+
+                // Simple validation
+                if (!name || !department || !date) {
+                    msgDiv.textContent = 'Please fill in all required fields.';
+                    msgDiv.style.display = 'block';
+                    msgDiv.style.background = '#FDE8E8';
+                    msgDiv.style.color = '#B91C1C';
+                    msgDiv.style.border = '1px solid #EF4444';
+                    return;
+                }
+
+                // Show success message
+                msgDiv.textContent = `Thank you, ${name}! Your appointment request for ${department} on ${date} has been received. Our orthopedic team will confirm shortly.`;
+                msgDiv.style.display = 'block';
+                msgDiv.style.background = '#E7F6DF';
+                msgDiv.style.color = '#3A731F';
+                msgDiv.style.border = '1px solid #7AC943';
+
+                // Scroll to the message
+                msgDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        }
+    </script>
 </body>
 </html>
